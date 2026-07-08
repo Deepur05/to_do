@@ -1,13 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-// ---------------------------------------------------------------------------
-// 1. SETUP — replace these with your own Supabase project values.
-//    Find them in: Supabase Dashboard -> Project Settings -> API
-// ---------------------------------------------------------------------------
-const supabaseUrl = 'https://YOUR_PROJECT_ID.supabase.co';
-const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
 
 // ---------------------------------------------------------------------------
 // SQL to run once in Supabase -> SQL editor:
@@ -26,7 +20,11 @@ const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+  await dotenv.load();
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    publishableKey: dotenv.env['SUPABASE_ANON_KEY']!,
+  );
   runApp(const MyApp());
 }
 
