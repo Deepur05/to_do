@@ -40,10 +40,10 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Todo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF8E5DF7),
-          brightness: Brightness.light,
+          seedColor: const Color.fromARGB(255, 35, 201, 107),
+          brightness: Brightness.dark,
         ),
-        scaffoldBackgroundColor: Colors.transparent,
+        scaffoldBackgroundColor: const Color(0xFF0B0F0E),
         useMaterial3: true,
       ),
       home: const Home(),
@@ -98,23 +98,12 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         elevation: 0,
         title: const Text(
           'My Tasks',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1A1A2E),
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       body: Stack(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFE8D5F5), Color(0xFFFCE4EC)],
-              ),
-            ),
-          ),
+          // ---- Animated 3D-style floating orb background ----
           AnimatedBuilder(
             animation: _bgController,
             builder: (context, _) {
@@ -133,39 +122,10 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           ),
         ],
       ),
-      floatingActionButton: Container(
-        height: 56,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF8E5DF7), Color(0xFFE85DC0)],
-          ),
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF8E5DF7).withValues(alpha: 0.35),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(28),
-            onTap: _openAddTodoSheet,
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text('New Task', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
-                ],
-              ),
-            ),
-          ),
-        ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openAddTodoSheet,
+        icon: const Icon(Icons.add),
+        label: const Text('New Task'),
       ),
     );
   }
@@ -183,19 +143,19 @@ class _OrbFieldPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final orbs = [
       _OrbSpec(
-        color: const Color(0xFFD4A5F0),
+        color: const Color(0xFF23C96B),
         radiusFactor: 0.35,
         speed: 1.0,
         phase: 0,
       ),
       _OrbSpec(
-        color: const Color(0xFFF5B8D0),
+        color: const Color(0xFF1B8F9E),
         radiusFactor: 0.25,
         speed: 1.6,
         phase: 2.1,
       ),
       _OrbSpec(
-        color: const Color(0xFFC9A0F7),
+        color: const Color(0xFF6C3FC9),
         radiusFactor: 0.20,
         speed: 0.7,
         phase: 4.2,
@@ -214,7 +174,7 @@ class _OrbFieldPainter extends CustomPainter {
       final paint = Paint()
         ..shader = RadialGradient(
           colors: [
-            orb.color.withValues(alpha: 0.35 * depth),
+            orb.color.withValues(alpha: 0.55 * depth),
             orb.color.withValues(alpha: 0.0),
           ],
         ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: radius));
@@ -271,7 +231,7 @@ class TodoList extends StatelessWidget {
             child: Text(
               'No tasks yet.\nTap + to add one.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF6B6B7D), fontSize: 16),
+              style: TextStyle(color: Colors.white70, fontSize: 16),
             ),
           );
         }
@@ -325,17 +285,11 @@ class _TodoCard extends StatelessWidget {
       ),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 15,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,7 +298,6 @@ class _TodoCard extends StatelessWidget {
               value: isDone,
               onChanged: (_) => _toggleDone(context),
               shape: const CircleBorder(),
-              activeColor: const Color(0xFF8E5DF7),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -357,7 +310,7 @@ class _TodoCard extends StatelessWidget {
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       decoration: isDone ? TextDecoration.lineThrough : null,
-                      color: isDone ? Colors.grey : const Color(0xFF1A1A2E),
+                      color: isDone ? Colors.white54 : Colors.white,
                     ),
                   ),
                   if ((todo['description'] ?? '').toString().isNotEmpty) ...[
@@ -366,7 +319,7 @@ class _TodoCard extends StatelessWidget {
                       todo['description'],
                       style: TextStyle(
                         fontSize: 13,
-                        color: isDone ? Colors.grey.shade400 : const Color(0xFF6B6B7D),
+                        color: isDone ? Colors.white38 : Colors.white70,
                       ),
                     ),
                   ],
@@ -464,7 +417,7 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: Color(0xFF15201C),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
@@ -476,7 +429,7 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: Colors.white24,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -484,78 +437,40 @@ class _AddTodoSheetState extends State<AddTodoSheet> {
             const SizedBox(height: 20),
             const Text(
               'New Task',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A2E),
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _titleController,
               autofocus: true,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Title',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF8E5DF7)),
-                ),
+                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _descController,
               maxLines: 3,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Description',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF8E5DF7)),
-                ),
+                border: OutlineInputBorder(),
                 alignLabelWithHint: true,
               ),
             ),
             const SizedBox(height: 24),
-            Container(
-              height: 50,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF8E5DF7), Color(0xFFE85DC0)],
-                ),
-                borderRadius: BorderRadius.circular(12),
+            FilledButton(
+              onPressed: _saving ? null : _onSavePressed,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
-                  onTap: _saving ? null : _onSavePressed,
-                  child: Center(
-                    child: _saving
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Text('Save', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16)),
-                  ),
-                ),
-              ),
+              child: _saving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Save'),
             ),
           ],
         ),
