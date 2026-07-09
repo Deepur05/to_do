@@ -206,8 +206,22 @@ class _OrbSpec {
 // TODO LIST — streams live from Supabase
 // =============================================================================
 
-class TodoList extends StatelessWidget {
+class TodoList extends StatefulWidget {
   const TodoList({super.key});
+
+  @override
+  State<TodoList> createState() => _TodoListState();
+}
+
+class _TodoListState extends State<TodoList> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -225,24 +239,100 @@ class TodoList extends StatelessWidget {
         if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
-        final todos = snapshot.data ?? [];
-        if (todos.isEmpty) {
-          return const Center(
-            child: Text(
-              'No tasks yet.\nTap + to add one.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70, fontSize: 16),
-            ),
-          );
+        var todos = snapshot.data ?? [];
+
+        if (_searchQuery.isNotEmpty) {
+          final q = _searchQuery.toLowerCase();
+          todos = todos.where((t) {
+            final title = (t['title'] as String? ?? '').toLowerCase();
+            final desc = (t['description'] as String? ?? '').toLowerCase();
+            return title.contains(q) || desc.contains(q);
+          }).toList();
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-          itemCount: todos.length,
-          itemBuilder: (context, index) {
-            final todo = todos[index];
-            return _TodoCard(todo: todo);
-          },
+        final doneCount = todos.where((t) => t['is_done'] == true).length;
+        final total = todos.length;
+        final progress = total > 0 ? doneCount / total : 0.0;
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Search tasks...',
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  prefixIcon: const Icon(Icons.search, color: Colors.white38),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.white38),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.white.withValues(alpha: 0.06),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                onChanged: (v) => setState(() => _searchQuery = v),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 8,
+                        backgroundColor: Colors.white12,
+                        valueColor: const AlwaysStoppedAnimation(Color(0xFF23C96B)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    '$doneCount/$total',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: todos.isEmpty
+                  ? Center(
+                      child: Text(
+                        _searchQuery.isNotEmpty
+                            ? 'No tasks match "$_searchQuery"'
+                            : 'No tasks yet.\nTap + to add one.',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.white70, fontSize: 16),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+                      itemCount: todos.length,
+                      itemBuilder: (context, index) {
+                        final todo = todos[index];
+                        return _TodoCard(todo: todo);
+                      },
+                    ),
+            ),
+          ],
         );
       },
     );
@@ -325,6 +415,11 @@ class _TodoCard extends StatelessWidget {
                   ],
                 ],
               ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, size: 20),
+              color: Colors.white38,
+              onPressed: () => _delete(context),
             ),
           ],
         ),
